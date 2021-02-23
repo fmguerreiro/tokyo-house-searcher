@@ -6,6 +6,8 @@
   :dependencies [[org.clojure/clojure "1.10.0"]
                  ;; [clj-http "3.10.0"]
                  ;; [cheshire "5.9.0"]
+                 [enlive "1.1.6"]
+                 [ring/ring-codec "1.1.3"]
                  ]
   :repl-options {:init-ns app.core}
   :main useful-oshima-teru.core
