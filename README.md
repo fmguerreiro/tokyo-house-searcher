@@ -1,8 +1,8 @@
 ## Build
 
-Subscribe to any ... in Japan to find your dream home.
+List your preferences and subscribe to them to receive alerts for your dream haunted home in Japan.
 
-Data is coming directly from suumo.jp
+Supports suumo.jp results for now.
 
 ```
 bash build.sh
