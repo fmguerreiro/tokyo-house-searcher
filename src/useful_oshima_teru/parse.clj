@@ -2,7 +2,8 @@
   (:require [useful-oshima-teru.util :as util]
             [net.cgrand.enlive-html :as html]
             [ring.util.codec :as codec]
-            [clojure.string :as str]))
+            [clojure.string :as str]
+            [clojure.edn :as edn]))
 
 (def ^:dynamic *filter* "告知事項")
 (def ^:dynamic *base-url* (str "https://suumo.jp/jj/chintai/ichiran/FR301FC011/?ar=030&bs=040&kskbn=01&fw=" (codec/percent-encode *filter*)))
@@ -30,11 +31,25 @@
          (map #(Integer/parseInt %))
          (apply max))))
 
+(defn- extract-numbers [s]
+  (edn/read-string ((re-find #"[+-]?([0-9]*[.])?[0-9]+" s) 0)))
+
+(defn- parse-distance [s] ;;=> "ＪＲ東海道本線/国府津駅 歩15分"
+  (let [split (str/split s #" ")
+        walking (extract-numbers (split 1))
+        from (split 0)]
+    {:walking (if (str/includes? (split 1) "バス") (* 2 walking) walking)
+     :from from})
+  ) ;; => {:walking "15" :from "国府津駅"}
+
+(defn- parse-amount [s]
+  (* 10000 (extract-numbers s)))
+
 (defn scrape-listings [url]
   (let [names  (scrape url *name-selector*)
-        prices (scrape url *price-selector*)
-        sizes  (scrape url *size-selector*)
-        dists  (scrape url *distance-selector*)
+        prices (map #(parse-amount %) (scrape url *price-selector*))
+        sizes  (map #(extract-numbers %) (scrape url *size-selector*))
+        dists  (map #(parse-distance %) (scrape url *distance-selector*))
         links  (map #(str *host* (:href (:attrs %))) (scrape url *link-selector*))]
     (->> (interleave names prices sizes dists links)
          (partition 5)
@@ -70,5 +85,9 @@
    (doall listings)
    (def a (parse *base-url*))
    (count (flatten a))
-   (first a)
+   (first a);; => {:name "国府津 1K 1階",
+            ;;     :price "2.4万円",
+            ;;     :size "16.66m",
+            ;;     :distance "ＪＲ東海道本線/国府津駅 歩15分",
+            ;;     :link "https://suumo.jp/chintai/bc_100215472530/"}
    )
