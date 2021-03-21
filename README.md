@@ -39,4 +39,4 @@ java -jar ./target/app-0.1.0-SNAPSHOT-standalone.jar
 ```
 
 ## Future Work
-Support non-haunted houses (maybe useful for some people).
+Support non-haunted houses.
