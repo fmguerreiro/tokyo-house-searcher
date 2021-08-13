@@ -16,7 +16,12 @@
 (def ^:dynamic *link-selector* [:h2.property_inner-title :> :a])
 (def ^:dynamic *price-selector* [#{:div.detailbox-property-point (html/right :div.detailbox-property-point)} :> html/text-node]) ; TODO: make it grep 管理費 as well
 (def ^:dynamic *size-selector* [:td.detailbox-property--col3 [:div (html/nth-of-type 2)] :> [html/text-node (html/text-pred #(re-matches #".*m$" %))]])
-(def ^:dynamic *distance-selector* [[:div.detailnote-box (html/nth-of-type 1)] :div :> html/text-node])
+(def ^:dynamic *distance-selector* [:div.detailnote-box :> :div :> [html/text-node (html/text-pred #(re-matches #".*" %))]])
+
+;; scratch
+;; (select *base-url* *distance-selector*)
+;; (def ls (get-listings *base-url*))
+;; (-> ls second (html/select [:div.detailnote-box :> :div :> [html/text-node (html/text-pred #(re-matches #".*" %))]]))
 
 (util/defn-memo fetch-url [url]
   (html/html-resource (java.net.URL. url)))
@@ -38,14 +43,14 @@
 (defn- listing->map [l]
   (let [name (first (html/select l *name-selector*))
         price (first (html/select l *price-selector*))
-        distance (first (html/select l *distance-selector*))
+        distance (html/select l *distance-selector*)
         size (first (html/select l *size-selector*))
         link (str *host* (-> (html/select l *link-selector*) first :attrs :href))]
     {:name name, :price price, :distance distance, :size size, :link link}))
 
 ;; TODO finish and test
-;; (defn- extract-numbers [s]
-;;   (edn/read-string ((re-find #"[+-]?([0-9]*[.])?[0-9]+" s) 0)))
+(defn- extract-numbers [s]
+  (edn/read-string ((re-find #"[+-]?([0-9]*[.])?[0-9]+" s) 0)))
 
 ;; (defn- parse-distance [s] ;;=> "ＪＲ東海道本線/国府津駅 歩15分"
 ;;   (let [split (str/split s #" ")

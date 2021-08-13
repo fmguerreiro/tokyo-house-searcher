@@ -1,10 +1,9 @@
 (ns useful-oshima-teru.core
   (:require [useful-oshima-teru.parse :as parse]
-            [useful-oshima-teru.util :as util]
             [clojure.tools.cli :refer [cli]]
             [clojure.java.io :as io]
             [clojure.edn :as edn])
-    (:gen-class))
+  (:gen-class))
 
 (defn- write-file [data file]
   (let [f (io/file file)]
@@ -19,20 +18,20 @@
 (defn- write-stdout [data]
   (dorun (map #(println %) data)))
 
-(defn- user-filter [conf res]
-  (let [max-yen          (get conf :max-yen)
-        max-walk-minutes (get conf :max-walk-minutes)
-        min-size-meters  (get conf :min-size-meters)]
-  (filter #(and (< (get % :price) max-yen)
-                (< (get-in % [:distance :walking]) max-walk-minutes)
-                (> (get % :size) min-size-meters))
-          res)))
+;; (defn- user-filter [conf res]
+;;   (let [max-yen          (get conf :max-yen)
+;;         max-walk-minutes (get conf :max-walk-minutes)
+;;         min-size-meters  (get conf :min-size-meters)])
+;;   (filter #(and (< (get % :price) max-yen)
+;;                 (< (get-in % [:distance :walking]) max-walk-minutes)
+;;                 (> (get % :size) min-size-meters))
+;;           res))
 
 (defn- do-run
   [in out]
   (let [conf       (edn/read-string (slurp (io/resource in)))
         parsed-res (parse/parse)
-        res        (user-filter conf parsed-res)]
+        res        parsed-res] ;; (user-filter conf parsed-res)
     (if out
       (write-file res out)
       (write-stdout res))))
