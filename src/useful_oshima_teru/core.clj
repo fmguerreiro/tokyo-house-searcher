@@ -18,20 +18,22 @@
 (defn- write-stdout [data]
   (dorun (map #(println %) data)))
 
-;; (defn- user-filter [conf res]
-;;   (let [max-yen          (get conf :max-yen)
-;;         max-walk-minutes (get conf :max-walk-minutes)
-;;         min-size-meters  (get conf :min-size-meters)])
-;;   (filter #(and (< (get % :price) max-yen)
-;;                 (< (get-in % [:distance :walking]) max-walk-minutes)
-;;                 (> (get % :size) min-size-meters))
-;;           res))
+(defn- user-filter [conf res]
+  (let [max-yen          (get conf :max-yen)
+        max-walk-minutes (get conf :max-walk-minutes)
+        min-size-meters  (get conf :min-size-meters)]
+    (filter #(and (< (get % :price-yen) max-yen)
+                  (< (+ (get-in % [:distance-min :bus] 0)
+                        (get-in % [:distance-min :walk]))
+                     max-walk-minutes)
+                  (> (get % :size-m) min-size-meters))
+            res)))
 
 (defn- do-run
   [in out]
   (let [conf       (edn/read-string (slurp (io/resource in)))
         parsed-res (parse/parse)
-        res        parsed-res] ;; (user-filter conf parsed-res)
+        res        (user-filter conf parsed-res)]
     (if out
       (write-file res out)
       (write-stdout res))))
