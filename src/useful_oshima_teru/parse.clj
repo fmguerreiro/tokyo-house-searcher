@@ -2,8 +2,7 @@
   (:require [useful-oshima-teru.util :as util]
             [net.cgrand.enlive-html :as html]
             [ring.util.codec :as codec]
-            [clojure.string :as str]
-            [clojure.edn :as edn]))
+            [clojure.string :as str]))
 
 (def ^:dynamic *filter* "告知事項")
 (def ^:dynamic *base-url* (str "https://suumo.jp/jj/chintai/ichiran/FR301FC011/?ar=030&bs=040&kskbn=01&fw=" (codec/percent-encode *filter*)))
@@ -17,11 +16,17 @@
 (def ^:dynamic *price-selector* [#{:div.detailbox-property-point (html/right :div.detailbox-property-point)} :> html/text-node]) ; TODO: make it grep 管理費 as well
 (def ^:dynamic *size-selector* [:td.detailbox-property--col3 [:div (html/nth-of-type 2)] :> [html/text-node (html/text-pred #(re-matches #".*m$" %))]])
 (def ^:dynamic *distance-selector* [:div.detailnote-box :> :div :> [html/text-node (html/text-pred #(re-matches #".*" %))]])
+(def ^:dynamic *location-selector* [[:td.detailbox-property-col (html/nth-last-child 1)] :> html/text-node])
 
-;; scratch
-;; (select *base-url* *distance-selector*)
-;; (def ls (get-listings *base-url*))
-;; (-> ls second (html/select [:div.detailnote-box :> :div :> [html/text-node (html/text-pred #(re-matches #".*" %))]]))
+(defn- parse-distance [ds]
+  (let [[_ line station] (re-matches #"(.+)/([^\s]+) .*" ds)
+        [_ bus] (re-matches #".*バス(\d+)分.*" ds)
+        [_ walk] (re-matches #".*歩(\d+)分.*" ds)]
+    {:line line, :station station, :walk walk, :bus bus}))
+
+(defn- get-yen-amount [s]
+  (let [[n _] (re-find #"[+-]?([0-9]*[.])?[0-9]+" s)]
+    (* 10000 (Integer/parseInt n))))
 
 (util/defn-memo fetch-url [url]
   (html/html-resource (java.net.URL. url)))
@@ -42,25 +47,12 @@
 
 (defn- listing->map [l]
   (let [name (first (html/select l *name-selector*))
-        price (first (html/select l *price-selector*))
-        distance (html/select l *distance-selector*)
+        price (get-yen-amount (first (html/select l *price-selector*)))
+        distance (map #(parse-distance %) (html/select l *distance-selector*))
         size (first (html/select l *size-selector*))
+        location (->> (html/select l *location-selector*) (map #(str/triml %)) (filter #(not-empty %)) first)
         link (str *host* (-> (html/select l *link-selector*) first :attrs :href))]
-    {:name name, :price price, :distance distance, :size size, :link link}))
-
-;; TODO finish and test
-(defn- extract-numbers [s]
-  (edn/read-string ((re-find #"[+-]?([0-9]*[.])?[0-9]+" s) 0)))
-
-;; (defn- parse-distance [s] ;;=> "ＪＲ東海道本線/国府津駅 歩15分"
-;;   (let [split (str/split s #" ")
-;;         walking (extract-numbers (split 1))
-;;         from (split 0)]
-;;     {:walking (if (str/includes? (split 1) "バス") (* 2 walking) walking)
-;;      :from from})) ;; => {:walking "15" :from "国府津駅"}
-
-;; (defn- parse-amount [s]
-;;   (* 10000 (extract-numbers s)))
+    {:name name, :price-yen price, :distance-min distance, :size-m size, :location location, :link link}))
 
 (defn parse
   ([]    (parse *base-url*))
@@ -71,4 +63,7 @@
                res (map #(listing->map %) listings)]
            res)))
 
-#_()
+;; scratch
+#_((select *base-url* *distance-selector*)
+   (def ls (get-listings *base-url*))
+   (def eg (->  ls second (html/select [:div.detailnote-box :> :div :> [html/text-node (html/text-pred #(re-matches #".*" %))]]))))
