@@ -1,2 +1,4 @@
 target/
 .repl-port
+.lsp/
+.nrepl-port
