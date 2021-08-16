@@ -22,11 +22,11 @@
   (let [[_ line station] (re-matches #"(.+)/([^\s]+) .*" ds)
         [_ bus] (re-matches #".*バス(\d+)分.*" ds)
         [_ walk] (re-matches #".*歩(\d+)分.*" ds)]
-    {:line line, :station station, :walk walk, :bus bus}))
+    {:line line, :station station, :walk (util/parse-int-with-def walk), :bus (util/parse-int-with-def bus)}))
 
 (defn- get-yen-amount [s]
   (let [[n _] (re-find #"[+-]?([0-9]*[.])?[0-9]+" s)]
-    (* 10000 (Integer/parseInt n))))
+    (* 10000 (Double/parseDouble n))))
 
 (util/defn-memo fetch-url [url]
   (html/html-resource (java.net.URL. url)))

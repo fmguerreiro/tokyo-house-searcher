@@ -7,3 +7,6 @@
 
 (defmacro defn-memo [name & body]
   `(def ~name (memoize (fn ~body))))
+
+(defn parse-int [s] (Integer/parseInt s))
+(def parse-int-with-def (fnil parse-int "0"))
