@@ -4,8 +4,8 @@
             [ring.util.codec :as codec]
             [clojure.string :as str]))
 
-(def ^:dynamic *filter* "告知事項")
-(def ^:dynamic *base-url* (str "https://suumo.jp/jj/chintai/ichiran/FR301FC011/?ar=030&bs=040&kskbn=01&fw=" (codec/percent-encode *filter*)))
+(def ^:dynamic *filter* ["告知事項"])
+(def ^:dynamic *base-url* (str "https://suumo.jp/jj/chintai/ichiran/FR301FC011/?ar=030&bs=040&kskbn=01&fw=" (str/join "+" (map #(codec/percent-encode %) *filter*))))
 (def ^:dynamic *host* (let [split (str/split *base-url* #"/")]
                         (str (split 0) "//" (split 2))))
 
@@ -46,13 +46,13 @@
   (select url *listing-selector*))
 
 (defn- listing->map [l]
-  (let [name (first (html/select l *name-selector*))
+  (let [;; name (first (html/select l *name-selector*))
         price (get-yen-amount (first (html/select l *price-selector*)))
         distance (map #(parse-distance %) (html/select l *distance-selector*))
         size (first (html/select l *size-selector*))
         location (->> (html/select l *location-selector*) (map #(str/triml %)) (filter #(not-empty %)) first)
         link (str *host* (-> (html/select l *link-selector*) first :attrs :href))]
-    {:name name, :price-yen price, :distance-min distance, :size-m size, :location location, :link link}))
+    {:location location, :price-yen price, :distance-min distance, :size-m size, :link link}))
 
 (defn parse
   ([]    (parse *base-url*))
@@ -64,6 +64,7 @@
            res)))
 
 ;; scratch
-#_((select *base-url* *distance-selector*)
+#_((str/join "+" (map #(codec/percent-encode %) ["告知事項", "hello"]))
+   (select *base-url* *distance-selector*)
    (def ls (get-listings *base-url*))
    (def eg (->  ls second (html/select [:div.detailnote-box :> :div :> [html/text-node (html/text-pred #(re-matches #".*" %))]]))))
