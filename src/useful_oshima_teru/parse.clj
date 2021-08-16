@@ -5,7 +5,7 @@
             [clojure.string :as str]))
 
 (def ^:dynamic *filter* ["告知事項"])
-(def ^:dynamic *base-url* (str "https://suumo.jp/jj/chintai/ichiran/FR301FC011/?ar=030&bs=040&kskbn=01&fw=" (str/join "+" (map #(codec/percent-encode %) *filter*))))
+(def ^:dynamic *base-url* "https://suumo.jp/jj/chintai/ichiran/FR301FC011/?ar=030&bs=040&kskbn=01&fw=")
 (def ^:dynamic *host* (let [split (str/split *base-url* #"/")]
                         (str (split 0) "//" (split 2))))
 
@@ -55,7 +55,7 @@
     {:location location, :price-yen price, :distance-min distance, :size-m size, :link link}))
 
 (defn parse
-  ([]    (parse *base-url*))
+  ([]    (parse (str *base-url* (str/join "+" (map #(codec/percent-encode %) *filter*)))))
   ([url] (let [n-pages (get-page-count url)
                urls (map #(str url "&pn=" (+ % 2)) (range (- n-pages 1)))
                listings-per-url (pmap #(get-listings %) urls)
