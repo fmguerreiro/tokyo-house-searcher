@@ -37,10 +37,10 @@
 
 (defn- get-page-count [url]
   (let [pages (select url *pagination-selector*)]
-    (->> pages
-         (filter #(not= "次へ" %))
-         (map #(Integer/parseInt %))
-         (apply max))))
+    (as-> pages $
+      (filter #(not= "次へ" %) $)
+      (map #(Integer/parseInt %) $)
+      (apply max (if (empty? $) '(1) $)))))
 
 (defn- get-listings [url]
   (select url *listing-selector*))
