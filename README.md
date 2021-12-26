@@ -8,35 +8,22 @@ Supports suumo.jp results for now.
 
 - [docker](https://docs.docker.com/engine/install)
 - [lein](https://leiningen.org/#install)
+- [node.js](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm)
+- [java](https://adoptopenjdk.net/)
+- [clojure cli](https://clojure.org/guides/getting_started)
 
-
-## Build
-
-```
-bash build.sh
-```
-
-## Options
-
-```
-  Switches               Default  Desc
-  --------               -------  ----
-  -i                              File where to read configuration from. Defaults to resources/example.conf
-  -o                              File where to store the results. Defaults to stdout.
-  -h, --no-help, --help  false    Shows this help
+With these installed, run
+```bash
+npm install
 ```
 
-## Run
+to install javascript dependencies.
 
-```
-./useful-oshima-teru
-```
+## Running
 
-Or if you prefer less speed/native image doesn't work for you:
-
-```
-java -jar ./target/app-0.1.0-SNAPSHOT-standalone.jar
+To run this application in development mode, start a shadow-cljs server with
+```bash
+npx shadow-cljs -d nrepl:0.7.0-beta1 -d cider/piggieback:0.4.2 -d refactor-nrepl:2.5.0 -d cider/cider-nrepl:0.25.0-SNAPSHOT server
 ```
 
-## Future Work
-Support non-haunted houses.
+Alternatively, CIDER users can run `cider-jack-in-cljs`. With this running, you can control compilation by accessing the shadow-cljs server at http://localhost:9630 and access the application at http://localhost:8080.

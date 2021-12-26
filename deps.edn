@@ -1,0 +1,9 @@
+{:paths   ["src" "resources"]
+ :deps    {com.fulcrologic/fulcro {:mvn/version "3.5.9"}
+           com.taoensso/timbre    {:mvn/version "5.1.2"}}
+ :aliases {:dev {:extra-paths ["dev"]
+                 :jvm-opts    ["-Dtrace"]
+                 :extra-deps  {org.clojure/clojurescript  {:mvn/version "1.10.914"}
+                               thheller/shadow-cljs       {:mvn/version "2.11.23"}
+                               fulcrologic/fulcro-inspect {:mvn/version "3.0.5"}
+                               binaryage/devtools         {:mvn/version "1.0.4"}}}}}
