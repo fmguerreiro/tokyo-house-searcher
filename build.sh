@@ -25,7 +25,7 @@ docker run -it \
         quay.io/quarkus/centos-quarkus-native-s2i:graalvm-1.0.0-rc16 \
         sh -c "native-image -H:+ReportUnsupportedElementsAtRuntime --enable-url-protocols=https -jar ../target/$NAME.jar"
 
-mv ./$NAME ../useful-oshima-teru
+mv ./$NAME ../app
 
 cd ../
 rm build -r

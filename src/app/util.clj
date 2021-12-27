@@ -1,4 +1,4 @@
-(ns useful-oshima-teru.util)
+(ns app.util)
 
 (defn spy
   [& args]

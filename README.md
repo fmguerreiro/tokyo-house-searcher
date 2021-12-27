@@ -1,4 +1,4 @@
-## Useful Oshima-teru
+## Real-estate alert
 
 List your preferences and subscribe to them to receive alerts for your dream haunted home in Japan.
 

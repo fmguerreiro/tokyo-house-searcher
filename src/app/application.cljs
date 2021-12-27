@@ -1,4 +1,4 @@
-(ns useful-oshima-teru.application
+(ns app.application
   (:require [com.fulcrologic.fulcro.application :as app]
             [com.fulcrologic.fulcro.rendering.keyframe-render2 :as keyframe-render2]))
 

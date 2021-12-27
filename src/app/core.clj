@@ -1,6 +1,6 @@
-(ns useful-oshima-teru.core
-  (:require [useful-oshima-teru.parse :as parse]
-            [useful-oshima-teru.filter :as filter]
+(ns app.core
+  (:require [app.parse :as parse]
+            [app.filter :as filter]
             [clojure.tools.cli :refer [cli]]
             [clojure.java.io :as io]
             [clojure.edn :as edn])

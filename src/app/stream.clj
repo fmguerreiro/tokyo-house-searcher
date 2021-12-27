@@ -1,4 +1,4 @@
-(ns useful-oshima-teru.stream)
+(ns app.stream)
 
 (defn mapper
   [reader callback]

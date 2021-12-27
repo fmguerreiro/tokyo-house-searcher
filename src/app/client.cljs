@@ -1,5 +1,5 @@
-(ns useful-oshima-teru.client
-  (:require [useful-oshima-teru.application :refer [SPA]]
+(ns app.client
+  (:require [app.application :refer [SPA]]
             [com.fulcrologic.fulcro.application :as app]
             [com.fulcrologic.fulcro.components :as comp :refer [defsc]]
             [com.fulcrologic.fulcro.dom :as dom]

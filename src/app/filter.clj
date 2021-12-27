@@ -1,4 +1,4 @@
-(ns useful-oshima-teru.filter
+(ns app.filter
   (:require [clojure.string :as str]))
 
 (defn- min-distance [ds]

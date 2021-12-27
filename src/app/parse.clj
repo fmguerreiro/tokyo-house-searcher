@@ -1,5 +1,5 @@
-(ns useful-oshima-teru.parse
-  (:require [useful-oshima-teru.util :as util]
+(ns app.parse
+  (:require [app.util :as util]
             [net.cgrand.enlive-html :as html]
             [ring.util.codec :as codec]
             [clojure.string :as str]))
