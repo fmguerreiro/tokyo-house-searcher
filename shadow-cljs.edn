@@ -1,16 +1,28 @@
-{:deps {:aliases [:dev]}
- :source-paths ["src"]
- :nrepl {:middleware [cider.nrepl/cider-middleware
-                      refactor-nrepl.middleware/wrap-refactor]}
- :dev-http {8080 "resources/public/"}
- :builds {:dev {:target     :browser
-                :output-dir "resources/public/js"
-                :asset-path "/js"
+{:deps   {:aliases [:dev]}
+ :nrepl  {:port 9000}
+ ;;/ :dev-http {8080 "resources/public"}
+ :builds {:main       {:target     :browser
+                       :output-dir "resources/public/js"
+                       :asset-path "/js"
 
-                :modules    {:main {:entries [useful-oshima-teru.client]
-                                    :init-fn useful-oshima-teru.client/init}}
+                       :modules    {:main {:init-fn useful-oshima-teru.client/init}}
+                       ;; guardrails checks only during dev
+                       :dev        {:compiler-options
+                                    {:external-config {:guardrails {}}}}
 
-                :devtools   {:watch-dir "resources/public"
-                             :after-load useful-oshima-teru.client/refresh
-                             :preloads [com.fulcrologic.fulcro.inspect.preload
-                                        useful-oshima-teru.development-preload]}}}}
+                       :devtools   {:after-load useful-oshima-teru.client/refresh
+                                    :preloads   [com.fulcrologic.fulcro.inspect.preload useful-oshima-teru.development-preload]
+                                    ;; TODO: remove these attributes for release
+                                    :http-port          8022
+                                    :http-resource-root "public"
+                                    :http-root          "resources/public/js"}}
+
+          :test       {:target           :browser-test
+                       :test-dir         "resources/public/js/test"
+                       :ns-regexp        "-test$"
+                       ;; static required for mocking to work
+                       :compiler-options {:static-fns      false
+                                          :external-config {:guardrails {:throw? true}}}
+                       :devtools         {:http-port          8022
+                                          :http-resource-root "public"
+                                          :http-root          "resources/public/js/test"}}}}
