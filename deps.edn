@@ -25,19 +25,19 @@
                        :extra-deps  {lambdaisland/kaocha {:mvn/version "1.0.700"}}}
 
            ;; See https://github.com/clojure-emacs/cider-nrepl/blob/master/deps.edn for Emacs support
-           :dev       {:extra-paths ["src/test" "src/dev" "src/workspaces"]
+           :dev       {:extra-paths ["src/test" "src/workspaces" "dev"]
                        :jvm-opts    ["-XX:-OmitStackTraceInFastThrow"]
                        :extra-deps  {org.clojure/clojurescript   {:mvn/version "1.10.773"}
+                                     org.clojure/tools.namespace {:mvn/version "1.0.0"}
                                      thheller/shadow-cljs        {:mvn/version "2.11.8"}
                                      fulcrologic/fulcro-spec     {:mvn/version "3.1.8"}
                                      binaryage/devtools          {:mvn/version "1.0.0"}
-                                     com.github.awkay/workspaces {:mvn/version "1.0.2"},
-                                     org.clojure/tools.namespace {:mvn/version "1.0.0"}}}
+                                     com.github.awkay/workspaces {:mvn/version "1.0.2"}}}}}
 
-           :cider-clj {:extra-deps {cider/cider-nrepl {:mvn/version "0.26.0"}}
-                       :main-opts ["-m" "nrepl.cmdline" "--middleware" "[cider.nrepl/cider-middleware]"]}
+            ;; :cider-clj {:extra-deps {cider/cider-nrepl {:mvn/version "0.26.0"}}
+            ;;             :main-opts ["-m" "nrepl.cmdline" "--middleware" "[cider.nrepl/cider-middleware]"]}
 
-           :cider-cljs {:extra-deps {org.clojure/clojurescript {:mvn/version "1.10.773"}
-                                     cider/cider-nrepl {:mvn/version "0.26.0"}
-                                     cider/piggieback {:mvn/version "0.5.1"}}
-                        :main-opts ["-m" "nrepl.cmdline" "--middleware" "[cider.nrepl/cider-middleware,cider.piggieback/wrap-cljs-repl]"]}}}
+            ;; :cider-cljs {:extra-deps {org.clojure/clojurescript {:mvn/version "1.10.773"}}
+            ;;                          cider/cider-nrepl {:mvn/version "0.26.0"}
+            ;;                          cider/piggieback {:mvn/version "0.5.1"}
+            ;;              :main-opts ["-m" "nrepl.cmdline" "--middleware" "[cider.nrepl/cider-middleware,cider.piggieback/wrap-cljs-repl]"]}}}

@@ -1,28 +1,28 @@
-{:deps   {:aliases [:dev]}
- :nrepl  {:port 9000}
- ;;/ :dev-http {8080 "resources/public"}
- :builds {:main       {:target     :browser
-                       :output-dir "resources/public/js"
-                       :asset-path "/js"
+{:deps      {:aliases [:dev]}
+ :nrepl     {:port 9000}
+ :dev-http  {8080 "resources/public"}
+ :builds    {:main       {:target     :browser
+                          :output-dir "resources/public/js/main"
+                          :asset-path "/js/main"
 
-                       :modules    {:main {:init-fn app.client/init}}
-                       ;; guardrails checks only during dev
-                       :dev        {:compiler-options
-                                    {:external-config {:guardrails {}}}}
+                          :modules    {:main {:init-fn app.client/init}}
+                          ;; guardrails checks only during dev
+                          :dev        {:compiler-options
+                                       {:external-config {:guardrails {}}}}
 
-                       :devtools   {:after-load app.client/refresh
-                                    :preloads   [com.fulcrologic.fulcro.inspect.preload app.development-preload]
-                                    ;; TODO: remove these attributes for release
-                                    :http-port          8022
-                                    :http-resource-root "public"
-                                    :http-root          "resources/public/js"}}
+                          :devtools   {:after-load app.client/refresh
+                                       :preloads   [com.fulcrologic.fulcro.inspect.preload app.development-preload]
+                                       ;; TODO: remove these attributes for release
+                                       :http-port          8022
+                                       :http-resource-root "public"
+                                       :http-root          "resources/public/js"}}
 
-          :test       {:target           :browser-test
-                       :test-dir         "resources/public/js/test"
-                       :ns-regexp        "-test$"
-                       ;; static required for mocking to work
-                       :compiler-options {:static-fns      false
-                                          :external-config {:guardrails {:throw? true}}}
-                       :devtools         {:http-port          8022
-                                          :http-resource-root "public"
-                                          :http-root          "resources/public/js/test"}}}}
+             :test       {:target           :browser-test
+                          :test-dir         "resources/public/js/test"
+                          :ns-regexp        "-test$"
+                          ;; static required for mocking to work
+                          :compiler-options {:static-fns      false
+                                             :external-config {:guardrails {:throw? true}}}
+                          :devtools         {:http-port          8022
+                                             :http-resource-root "public"
+                                             :http-root          "resources/public/js/test"}}}}
