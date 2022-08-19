@@ -14,7 +14,7 @@ Supports suumo.jp results for now.
 
 With these installed, run
 ```bash
-npm install
+yarn install
 ```
 
 to install javascript dependencies.
