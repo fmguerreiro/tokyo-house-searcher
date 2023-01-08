@@ -1,6 +1,6 @@
-(ns app.core
-  (:require [app.parse :as parse]
-            [app.filter :as filter]
+(ns app.parser.core
+  (:require [app.parser.parse :as parse]
+            [app.parser.filter :as filter]
             [clojure.tools.cli :refer [cli]]
             [clojure.java.io :as io]
             [clojure.edn :as edn])

@@ -27,3 +27,10 @@ npx shadow-cljs -d nrepl:0.7.0-beta1 -d cider/piggieback:0.4.2 -d refactor-nrepl
 ```
 
 Alternatively, CIDER users can run `cider-jack-in-cljs`. With this running, you can control compilation by accessing the shadow-cljs server at http://localhost:9630 and access the application at http://localhost:8080.
+
+### Running the parser
+
+``` shell
+clj -T:build uber
+java -jar target/parser/core-0.0.1-standalone.jar
+```

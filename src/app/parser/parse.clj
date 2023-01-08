@@ -1,5 +1,5 @@
-(ns app.parse
-  (:require [app.util :as util]
+(ns app.parser.parse
+  (:require [app.parser.util :as util]
             [net.cgrand.enlive-html :as html]
             [ring.util.codec :as codec]
             [clojure.string :as str]))

@@ -1,4 +1,4 @@
-(ns app.filter
+(ns app.parser.filter
   (:require [clojure.string :as str]))
 
 (defn- min-distance [ds]
