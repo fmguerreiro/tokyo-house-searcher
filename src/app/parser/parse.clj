@@ -5,7 +5,7 @@
             [clojure.string :as str]))
 
 (def ^:dynamic *filter* ["告知事項"])
-(def ^:dynamic *base-url* "https://suumo.jp/jj/chintai/ichiran/FR301FC011/?ar=030&bs=040&kskbn=01&fw=")
+(def ^:dynamic *base-url* "https://suumo.jp/chintai/tokyo/new/?ar=030&bs=040&kskbn=01&fw=")
 (def ^:dynamic *host* (let [split (str/split *base-url* #"/")]
                         (str (split 0) "//" (split 2))))
 
