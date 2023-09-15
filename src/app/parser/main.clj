@@ -5,10 +5,11 @@
 (defn -main
   [& args]
   (println "Scraping suumo!")
-  (map #(do (println %) (db/insert %)) (parse/scrape-suumo))
+  (map #(db/insert %) (parse/scrape-suumo))
   (println "Done!"))
 
 #_(
    (def res (parse/scrape-suumo))
-    (map #(db/insert %) res)
+   (count (distinct (map #(% :id) res)))
+   (map #(db/insert %) res)
    )
