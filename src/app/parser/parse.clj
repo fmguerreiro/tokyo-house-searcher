@@ -3,16 +3,17 @@
    [app.parser.fetch :as fetch]
    [app.parser.util :as util]
    [net.cgrand.enlive-html :as html]
-   [clojure.string :as str]))
+   [clojure.string :as str]
+   [diehard.core :as dh]))
 
 ;; (def id-regex #".*\/(.*)\/(.*)$")
 ;; (defn- get-id-from-url [url]
 ;;   (second (first (re-seq id-regex url))))
 
 (defn- get-number [x]
-  (let [withoutChars (str/replace x #"[^\d.]" "")
-        parsedNumber (Double/parseDouble withoutChars)]
-    parsedNumber))
+  (let [withoutChars (str/replace x #"[^\d.]" "")]
+    (try (Double/parseDouble withoutChars)
+         (catch Exception e 0))))
 
 ;; (defn- parse-img-url [x]
 ;;   (get-in (first (html/select x [:.cassetteitem_object-item :img])) [:attrs :src]))
@@ -43,11 +44,13 @@
 ;;     (Thread/sleep interval)
 ;;     (f x)))
 
+(dh/defratelimiter fetch-rl {:rate 100})
+
 (defn scrape-suumo
   []
   (let [first-page (fetch/fetch 1)
         page-count (Integer/parseInt (first (html/select first-page [:.pagination-parts html/last-child > html/text-node])))]
-    (->> (map #(fetch/fetch %) (range 1 (min 3 page-count))) ; TODO: remove max when done, also, do it slowly
+    (->> (map #(dh/with-rate-limiter fetch-rl (fetch/fetch %)) (range 1 page-count)) ; TODO: last processed page was 288
          (mapcat #(html/select % [:.cassetteitem])) ;; listings list
          (map #(html->map %)))))
 
