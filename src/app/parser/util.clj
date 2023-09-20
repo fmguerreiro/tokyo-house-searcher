@@ -10,3 +10,9 @@
 
 (defn parse-int [s] (Integer/parseInt s))
 (def parse-int-with-def (fnil parse-int "0"))
+
+(defn unchunk [s]
+  (when (seq s)
+    (lazy-seq
+      (cons (first s)
+            (unchunk (next s))))))

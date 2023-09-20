@@ -1,6 +1,7 @@
 (ns app.parser.parse
   (:require
    [app.parser.fetch :as fetch]
+   [app.parser.util :as util]
    [net.cgrand.enlive-html :as html]
    [clojure.string :as str]))
 
@@ -47,8 +48,7 @@
   (let [first-page (fetch/fetch 1)
         page-count (Integer/parseInt (first (html/select first-page [:.pagination-parts html/last-child > html/text-node])))]
     (->> (map #(fetch/fetch %) (range 1 (min 3 page-count))) ; TODO: remove max when done, also, do it slowly
-         (map #(html/select % [:.cassetteitem])) ;; listings list
-         (flatten) ;; TODO: this is probably pretty inefficient, ah well
+         (mapcat #(html/select % [:.cassetteitem])) ;; listings list
          (map #(html->map %)))))
 
 ;; (defn- parse-distance [ds]
@@ -74,6 +74,10 @@
    (def name (first (html/select x [:.cassetteitem_content-title html/content])))
 
    (def page-count (Integer/parseInt (first (html/select memoed-page [:.pagination-parts html/last-child > html/text-node]))))
+   (def pages (map #(fetch/fetch %) (range 1 (min 3 page-count))))
+   (def paged-listings (map #(html/select % [:.cassetteitem]) pages))
+   (def listings (map #(html->map %) (util/unchunk paged-listings)))
+
    (defn html->map [x]
      (let [map1 {:id (get-in (second (:content (first (html/select x [:.cassetteitem_object-item])))) [:attrs :src]) ;; TODO: to get id? 100342839692 in this case? "https://img01.suumo.com/front/gazo/fr/bukken/692/100342839692/100342839692_gw.jpg"
                  :price (first (html/select x [:.cassetteitem_price--rent > html/text-node])) ;; "4万円"
@@ -94,7 +98,7 @@
    (def pages (map #(fetch/fetch %) (range 1 (min 3 page-count))))
    (def listings (map #(html/select % [:.cassetteitem]) pages))
    (flatten listings)
-   (def mapped-listings (map #(html->map %) (flatten listings)))
+   (def mapped-listings (count (map #(html->map %) (unchunk listings))))
    (def first-res (first mapped-listings))
    (map first-res [:id :price :size :location :transportation :building-info :link])
 
