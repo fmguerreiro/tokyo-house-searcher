@@ -1,7 +1,7 @@
-(ns app.parser.parse
+(ns app.scraper.parse
   (:require
-   [app.parser.fetch :as fetch]
-   [app.parser.util :as util]
+   [app.scraper.fetch :as fetch]
+   [app.scraper.util :as util]
    [net.cgrand.enlive-html :as html]
    [clojure.string :as str]
    [diehard.core :as dh]))
@@ -21,6 +21,11 @@
 (defn- parse-name [x]
   (first (html/select x [:.cassetteitem_content-title html/content])))
 
+(defn normalize-town-name [town-name]
+  (-> town-name
+      (str/replace "東京都" "")
+      (str/replace #"[０-９]" "")))
+
 (defn- html->map [x]
   (let [map1 {:id (parse-name x)
               ;; :id (if-let [id (get-id-from-url (parse-img-url x))]
@@ -29,7 +34,7 @@
               ;; 100342839692 or "ＪＲ中央線 日野駅 3階建 築35年"
               :price (get-number (first (html/select x [:.cassetteitem_price--rent > html/text-node]))) ;; "4万円" -> 4
               :size (get-number (first (html/select x [:.cassetteitem_menseki html/text-node]))) ;; "18.22m" -> 18.22
-              :location (first (html/select x [:.cassetteitem_detail-col1 html/text-node])) ;; "東京都日野市多摩平６"
+              :location (normalize-town-name (first (html/select x [:.cassetteitem_detail-col1 html/text-node]))) ;; "東京都日野市多摩平６"
               :transportation (str/join " " (html/select x [:.cassetteitem_detail-col2 > html/text-node])) ;; ("ＪＲ中央線/日野駅 歩185分" "ＪＲ中央線/豊田駅 歩15分" "京王線/南平駅 歩30分")
               :link (get-in (second (:content (first (html/select x [:.ui-text--midium])))) [:attrs :href]) ;; "/chintai/jnc_000084910027/?bc=100343599855"
               }

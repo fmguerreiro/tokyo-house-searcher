@@ -1,4 +1,4 @@
-(ns app.parser.db
+(ns app.db
   (:require [next.jdbc :as jdbc]
             [honey.sql :as sql]
             [honey.sql.helpers :as h :refer [create-table with-columns]]))
@@ -32,12 +32,33 @@
 
 (defn insert
   [house]
-  (println "Inserting" house)
   (let [query (-> (h/insert-into :houses)
                   (h/values [house])
                   (h/upsert (-> (h/on-conflict :id)
-                                h/do-nothing))
+                                (h/do-update-set {:fields [:price :size :location :transportation :building-age :building-floor :link]})))
                   (sql/format {:pretty true}))]
     (jdbc/execute! db query)))
+
+(defn select
+  ([] (select 0))
+  ([page]
+   (let [limit  10
+         offset (* page limit)
+         query  (-> (h/select :*)
+                    (h/from :houses)
+                    (h/limit limit)
+                    (h/offset offset)
+                    (sql/format))]
+     (jdbc/execute! db query))))
+
+(defn select-all
+  []
+  (loop [i         0
+         cursor    (select i)
+         res       []]
+    (if (empty? cursor)
+      res
+      (let [new-res (into res cursor)]
+        (recur (inc i) (select (inc i)) new-res)))))
 
 #_((jdbc/execute! db (sql/format {:drop-table [:houses]})))

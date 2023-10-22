@@ -1,6 +1,7 @@
-(ns app.parser.core
-  (:require [app.parser.parse :as parse]
-            [app.parser.filter :as filter]
+;; TODO: old file, remove, after making sure it's no longer useful
+(ns app.scraper.core
+  (:require [app.scraper.parse :as parse]
+            [app.scraper.filter :as filter]
             [clojure.tools.cli :refer [cli]]
             [clojure.java.io :as io]
             [clojure.edn :as edn])

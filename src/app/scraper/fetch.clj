@@ -1,7 +1,7 @@
-(ns app.parser.fetch
+(ns app.scraper.fetch
   (:require [clojure.string :as str]
             [ring.util.codec :as codec]
-            [app.parser.util :as util]
+            [app.scraper.util :as util]
             [net.cgrand.enlive-html :as html]))
 
 (def ^:dynamic *base-url* "https://suumo.jp/chintai/tokyo/new/?ar=030&bs=040&kskbn=01&pc=50&fw=")

@@ -1,4 +1,4 @@
-(ns app.parser.util)
+(ns app.scraper.util)
 
 (defn spy
   [& args]

@@ -1,6 +1,6 @@
-(ns app.parser.main
-  (:require [app.parser.parse :as parse]
-            [app.parser.db :as db]))
+(ns app.scraper
+  (:require [app.scraper.parse :as parse]
+            [app.db :as db]))
 
 (defn -main
   [& args]

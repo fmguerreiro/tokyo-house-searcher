@@ -1,4 +1,4 @@
-(ns app.parser.stream)
+(ns app.scraper.stream)
 
 (defn mapper
   [reader callback]
