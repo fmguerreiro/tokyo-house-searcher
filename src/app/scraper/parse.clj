@@ -22,9 +22,10 @@
   (first (html/select x [:.cassetteitem_content-title html/content])))
 
 (defn normalize-town-name [town-name]
-  (-> town-name
-      (str/replace "東京都" "")
-      (str/replace #"[０-９]" "")))
+  (let [res (-> town-name
+                (str/replace "東京都" "")
+                (str/replace #"(区|市|町|郡).+" ""))]
+    (if (empty? res) "町田" res)))
 
 (defn- html->map [x]
   (let [map1 {:id (parse-name x)

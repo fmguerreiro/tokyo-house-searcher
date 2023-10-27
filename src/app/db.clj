@@ -22,11 +22,11 @@
                     (create-table :houses :if-not-exists
                                   (with-columns
                                     [:id :varchar :primary-key]
-                                    [:price :varchar]
-                                    [:size :varchar]
+                                    [:price :float]
+                                    [:size :float]
                                     [:location :varchar]
                                     [:transportation :varchar]
-                                    [:building-age :varchar]
+                                    [:building-age :int]
                                     [:building-floor :varchar]
                                     [:link :varchar]))))))
 
@@ -52,13 +52,14 @@
      (jdbc/execute! db query))))
 
 (defn select-all
-  []
-  (loop [i         0
-         cursor    (select i)
-         res       []]
-    (if (empty? cursor)
-      res
-      (let [new-res (into res cursor)]
-        (recur (inc i) (select (inc i)) new-res)))))
+  ([] (select-all 1000))
+  ([max-page]
+   (loop [i         0
+          cursor    (select i)
+          res       []]
+     (if (or (empty? cursor) (> i max-page))
+       res
+       (let [new-res (into res cursor)]
+         (recur (inc i) (select (inc i)) new-res))))))
 
 #_((jdbc/execute! db (sql/format {:drop-table [:houses]})))

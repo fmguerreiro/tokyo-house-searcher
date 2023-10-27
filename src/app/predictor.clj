@@ -1,42 +1,37 @@
 (ns app.predictor.main
   (:require [app.predictor.transformer :as t]
             [app.db :as db]
-            [app.scraper.parse :as p]
             [clojure.core.matrix.dataset :as d]
+            [clojure.core.matrix :as m]
             [incanter.core :as i]
-            [incanter.stats :as s]))
+            [incanter.stats :as s]
+            [incanter.charts :as c]))
 
-(def column-names t/coefficients)
+(def column-names [:houses/price :houses/building_age :houses/size]) ;; TODO t/coefficients)
 
-(def data
-  (->> (db/select 0) ;; TODO more than 1 page
-       (map t/get-coefficients)
-       (vec)))
+(def total-data (db/select-all 0)) ;; TODO: remove "0"
 
-(def total-data (db/select-all))
+;; (def dataset (d/dataset column-names total-data))
+(def dataset (d/dataset column-names total-data))
 
-(def town-names
-  (loop [i         0
-         cursor    (db/select i)
-         locations #{}]
-    (if (empty? cursor)
-      (do
-        (println "Done")
-        locations)
-      (let [new-locations (into locations (map #(p/normalize-town-name (:houses/location %)) cursor))]
-        (recur (inc i) (db/select (inc i)) new-locations)))))
+(defn feature-matrix [col-names data]
+  (-> (i/$ col-names data)
+      (i/to-matrix)))
 
-(def dataset (d/dataset column-names data))
-;; [[6.45 10 "東京都あきる野市牛沼" 59.03] [5.5 35 "東京都八王子市下恩方町" 45.36] [4.6 56 "東京都昭島市郷地町３" 28.98] [5.2 60 "東京都八王子市小比企町" 49.2] [5.2 48 "東京都町田市本町田" 32.22] [6.5 41 "東京都東久留米市滝山７" 54] [8 66 "東京都北区志茂４" 36.49] [4.5 39 "東京都武蔵村山市中原２" 39] [10 59 "東京都三鷹市上連雀８" 58.74] [3.8 68 "東京都新宿区西新宿８" 9.9]]
-(def dataset-matrix (i/to-matrix dataset :dummies true))
-;; #vectorz/array [[6.45,10.0,0.0,0.0,0.0,0.0,59.03],[5.5,35.0,0.0,0.0,1.0,0.0,45.36],[4.6,56.0,0.0,1.0,1.0,0.0,28.98],[5.2,60.0,0.0,0.0,1.0,1.0,49.2],[5.2,48.0,1.0,0.0,0.0,1.0,32.22],[6.5,41.0,0.0,1.0,1.0,1.0,54.0],[8.0,66.0,0.0,1.0,0.0,0.0,36.49],[4.5,39.0,1.0,0.0,0.0,0.0,39.0],[10.0,59.0,0.0,0.0,0.0,1.0,58.74],[3.8,68.0,0.0,1.0,0.0,1.0,9.9]]
-(def y (i/sel dataset-matrix :cols 0))
-(def X (i/sel dataset-matrix :cols (range 1 (.sliceCount (first dataset-matrix)))))
+;; (def dataset-matrix (i/to-matrix dataset :dummies false))
+(def dataset-matrix (feature-matrix column-names dataset))
 
-(def model (s/linear-model y X :intercept false))
+(i/$ :houses/price dataset)
 
-(def X' X)
-(s/predict model X')
+(def y (i/sel dataset-matrix :cols 0)) ;; dependent variable - prices
+(def X (i/sel dataset-matrix :cols (range 1 (.sliceCount (first dataset-matrix))))) ;; independent variables - everything else
+
+(def price-lm (s/linear-model y X :intercept true))
+
+(s/predict price-lm [50 30])
+
+;; view graph in relation to the first independent variable
+(i/view (c/add-lines (c/scatter-plot (first X) y) (first X) (:fitted price-lm)))
 
 ;; (defn has-categories? [seq]
 ;;   (->> seq
@@ -136,20 +131,52 @@
    (feature-matrix ["id" "price" "size" "location" "transportation" "building-age" "building-floor"] data)
 
    (defn normalize-location [house]
-     (let [location (:houses/location house)]
-       (merge house {:houses/location (p/normalize-town-name location)})))
+     (let [location (:houses/location house)
+           new-house (merge house {:houses/location (p/normalize-town-name location)})]
+       (println new-house)
+       new-house))
 
-(defn update-locations [houses]
-  (->> houses
-       (map #(normalize-location (select-keys % (keys %))))
-       (map #(db/insert %))))
+   (defn numerify-fields [house]
+     (let [price (:houses/price house)
+           size  (:houses/size house)
+           age   (:houses/building_age house)
+           new-house (merge house {:houses/price (Double/parseDouble price)
+                                   :houses/building_age (Integer/parseInt age)
+                                   :houses/size (Double/parseDouble size)})]
+       (println new-house)
+       new-house))
 
-(loop [i      0
-       cursor (db/select i)]
-  (println "Page" i)
-  (if (or (empty? cursor))
-    (println "Done")
-    (do
-     (u/spy (update-locations cursor))
-     (recur (inc i) (db/select (inc i))))))
-)
+   (defn update-locations [houses]
+     (->> houses
+          (map #(normalize-location (select-keys % (keys %))))
+          (map #(db/insert %))))
+
+   (update-locations total-data)
+
+   (defn update-numerical-fields [houses]
+     (->> houses
+          (map #(numerify-fields (select-keys % (keys %))))
+          (map #(db/insert %))))
+
+   (update-numerical-fields (db/select-all))
+
+   (def town-names
+     (loop [i         0
+            cursor    (db/select i)
+            locations #{}]
+       (if (empty? cursor)
+         (do
+           (println "Done")
+           locations)
+         (let [new-locations (into locations (map #(p/normalize-town-name (:houses/location %)) cursor))]
+           (recur (inc i) (db/select (inc i)) new-locations)))))
+
+   (loop [i      0
+          cursor (db/select i)]
+     (println "Page" i)
+     (if (or (empty? cursor))
+       (println "Done")
+       (do
+         (update-locations cursor)
+         (recur (inc i) (db/select (inc i))))))
+   )
