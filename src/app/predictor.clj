@@ -7,28 +7,26 @@
             [incanter.stats :as s]
             [incanter.charts :as c]))
 
-(def column-names [:houses/price :houses/building_age :houses/size]) ;; TODO t/coefficients)
+(def column-names t/coefficients)
 
-(def total-data (db/select-all 0)) ;; TODO: remove "0"
+(def total-data (db/select-all))
 
 ;; (def dataset (d/dataset column-names total-data))
 (def dataset (d/dataset column-names total-data))
 
-(defn feature-matrix [col-names data]
-  (-> (i/$ col-names data)
-      (i/to-matrix)))
+(defn feature-matrix [col-names ds]
+  (-> (i/$ col-names ds)
+      (i/to-matrix :dummies true)))
 
 ;; (def dataset-matrix (i/to-matrix dataset :dummies false))
 (def dataset-matrix (feature-matrix column-names dataset))
 
-(i/$ :houses/price dataset)
-
-(def y (i/sel dataset-matrix :cols 0)) ;; dependent variable - prices
-(def X (i/sel dataset-matrix :cols (range 1 (.sliceCount (first dataset-matrix))))) ;; independent variables - everything else
+(def y (i/$ 0 dataset-matrix)) ;; dependent variable - prices
+(def X (i/$ (range 1 (.sliceCount (first dataset-matrix))) dataset-matrix)) ;; independent variables - everything else
 
 (def price-lm (s/linear-model y X :intercept true))
 
-(s/predict price-lm [50 30])
+(s/predict price-lm [30 1 0 0 0 0 0 23])
 
 ;; view graph in relation to the first independent variable
 (i/view (c/add-lines (c/scatter-plot (first X) y) (first X) (:fitted price-lm)))
