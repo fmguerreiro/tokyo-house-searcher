@@ -1,6 +1,8 @@
 (ns app.predictor.main
   (:require [app.predictor.transformer :as t]
             [app.db :as db]
+            [app.scraper.util :as u]
+            [app.scraper.fetch :as f]
             [clojure.core.matrix.dataset :as d]
             [clojure.core.matrix :as m]
             [incanter.core :as i]
@@ -9,16 +11,14 @@
 
 (def column-names t/coefficients)
 
-(def total-data (db/select-all))
+(def data (into [] (db/select-all))) ;; TODO
 
-;; (def dataset (d/dataset column-names total-data))
-(def dataset (d/dataset column-names total-data))
+(def dataset (d/dataset column-names data))
 
 (defn feature-matrix [col-names ds]
   (-> (i/$ col-names ds)
       (i/to-matrix :dummies true)))
 
-;; (def dataset-matrix (i/to-matrix dataset :dummies false))
 (def dataset-matrix (feature-matrix column-names dataset))
 
 (def y (i/$ 0 dataset-matrix)) ;; dependent variable - prices
@@ -28,27 +28,54 @@
 
 (s/predict price-lm [30 1 0 0 0 0 0 23])
 
+(defn outlier?
+  "Returns true if the difference between the original and predicted values is greater than 20%"
+  ^Number [^Number original ^Number predicted]
+  (let [diff (Math/abs (- original predicted))]
+    (> diff (* 0.2 original))))
+
+(defn outlier-predictions [model ds-m]
+  "Returns a vector of booleans indicating whether the prediction for each row is an outlier"
+  (m/slice-map #(let [y (m/scalar (first %))
+                      X (into [] (m/subvector % 1 (dec (m/ecount %))))]
+                  (outlier? y (s/predict model X)))
+               ds-m))
+
+(defn row->x-y
+  [row]
+  (let [y (m/scalar (first row))
+        X (into [] (m/subvector row 1 (dec (m/ecount row))))]
+    {:y y :X X}))
+
+(defn outlier-prevalence
+  "Returns a vector of outliers with their indices and differences from the original values sorted by biggest difference first"
+  ;; ^Vector[^{:i ^Int :diff ^Int}]
+  [model ds-m]
+  (->> (m/slice-map #(let [{X :X y :y} (row->x-y %)
+                           predicted   (s/predict model X)]
+                       {:diff (Math/abs (- y predicted))})
+                    ds-m)
+       (map-indexed #(assoc %2 :i %1))
+       (sort-by :diff)
+       (reverse)))
+
+(defn url-still-valid? [path]
+  (try (do (f/fetch-url (str "https://suumo.jp" path)) true)
+       (catch Exception e false)))
+
+(defn filter-outliers
+  [ops]
+  (->> ops
+       (map #(assoc % :data (nth data (:i %))))
+       (filter #(= "渋谷" (:houses/location (:data %))))
+       (filter #(url-still-valid? (:houses/link (:data %)))))
+  )
+
+(def best-outliers (-> (outlier-prevalence price-lm dataset-matrix)
+                       (filter-outliers)))
+
 ;; view graph in relation to the first independent variable
-(i/view (c/add-lines (c/scatter-plot (first X) y) (first X) (:fitted price-lm)))
-
-;; (defn has-categories? [seq]
-;;   (->> seq
-;;        (filter #(or (number? %) (boolean? %)))
-;;        (empty?)))
-
-;; (def columns (:columns dataset)) ;; TODO: need this?
-;; (def categorical-values
-;;      (->> columns
-;;           (filter has-categories?)
-;;           (apply distinct)))
-
-;; (defn indices [pred coll]
-;;   (keep-indexed #(when (pred %2) %1) coll))
-;;
-; ...
-;
-;; (def X' [1000 1 0 1])
-;;
+;; (i/view (c/add-lines (c/scatter-plot (first X) y) (first X) (:fitted price-lm)))
 
 #_(
    (def data '())
@@ -149,7 +176,7 @@
           (map #(normalize-location (select-keys % (keys %))))
           (map #(db/insert %))))
 
-   (update-locations total-data)
+   (update-locations data)
 
    (defn update-numerical-fields [houses]
      (->> houses
