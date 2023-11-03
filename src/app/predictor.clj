@@ -1,57 +1,18 @@
 (ns app.predictor.main
   (:require [app.predictor.transformer :as t]
             [app.db :as db]
-            [app.scraper.util :as u]
             [app.scraper.fetch :as f]
-            [clojure.core.matrix.dataset :as d]
+            [app.predictor.linear-model :refer [trained-lm]]
             [clojure.core.matrix :as m]
-            [incanter.core :as i]
-            [incanter.stats :as s]
-            [incanter.charts :as c]))
-
-(def column-names t/coefficients)
-
-(def data (into [] (db/select-all))) ;; TODO
-
-(def dataset (d/dataset column-names data))
-
-(defn feature-matrix [col-names ds]
-  (-> (i/$ col-names ds)
-      (i/to-matrix :dummies true)))
-
-(def dataset-matrix (feature-matrix column-names dataset))
-
-(def y (i/$ 0 dataset-matrix)) ;; dependent variable - prices
-(def X (i/$ (range 1 (.sliceCount (first dataset-matrix))) dataset-matrix)) ;; independent variables - everything else
-
-(def price-lm (s/linear-model y X :intercept true))
-
-(s/predict price-lm [30 1 0 0 0 0 0 23])
-
-(defn outlier?
-  "Returns true if the difference between the original and predicted values is greater than 20%"
-  ^Number [^Number original ^Number predicted]
-  (let [diff (Math/abs (- original predicted))]
-    (> diff (* 0.2 original))))
-
-(defn outlier-predictions [model ds-m]
-  "Returns a vector of booleans indicating whether the prediction for each row is an outlier"
-  (m/slice-map #(let [y (m/scalar (first %))
-                      X (into [] (m/subvector % 1 (dec (m/ecount %))))]
-                  (outlier? y (s/predict model X)))
-               ds-m))
-
-(defn row->x-y
-  [row]
-  (let [y (m/scalar (first row))
-        X (into [] (m/subvector row 1 (dec (m/ecount row))))]
-    {:y y :X X}))
+            [incanter.stats :as s]))
 
 (defn outlier-prevalence
-  "Returns a vector of outliers with their indices and differences from the original values sorted by biggest difference first"
-  ;; ^Vector[^{:i ^Int :diff ^Int}]
+  "Calculates the best outliers from a dataset by returning a vector of
+  outliers with their indices and differences from the original values sorted by biggest difference first.
+
+  ^Vector[^{:i ^Int :diff ^Int}]"
   [model ds-m]
-  (->> (m/slice-map #(let [{X :X y :y} (row->x-y %)
+  (->> (m/slice-map #(let [{X :X y :y} (t/row->x-y %)
                            predicted   (s/predict model X)]
                        {:diff (Math/abs (- y predicted))})
                     ds-m)
@@ -59,20 +20,14 @@
        (sort-by :diff)
        (reverse)))
 
-(defn url-still-valid? [path]
-  (try (do (f/fetch-url (str "https://suumo.jp" path)) true)
-       (catch Exception e false)))
-
-(defn filter-outliers
-  [ops]
-  (->> ops
-       (map #(assoc % :data (nth data (:i %))))
-       (filter #(= "渋谷" (:houses/location (:data %))))
-       (filter #(url-still-valid? (:houses/link (:data %)))))
-  )
-
-(def best-outliers (-> (outlier-prevalence price-lm dataset-matrix)
-                       (filter-outliers)))
+(defn find-outliers
+  []
+  (let [data (into [] (db/select-all))
+        dataset-matrix (t/data->matrix data)]
+    (->> (outlier-prevalence trained-lm dataset-matrix)
+         (map #(assoc % :data (nth data (:i %))))
+         (filter #(= "渋谷" (:houses/location (:data %))))
+         (filter #(f/url-still-valid? (:houses/link (:data %)))))))
 
 ;; view graph in relation to the first independent variable
 ;; (i/view (c/add-lines (c/scatter-plot (first X) y) (first X) (:fitted price-lm)))
@@ -147,7 +102,7 @@
    (:fitted model)
    (:r-square model)
    (:residuals model) ; higher value means worse fit => outliers
-                      ; or maybe can go and call predict on each row and see which ones are too off
+                                        ; or maybe can go and call predict on each row and see which ones are too off
 
    (defn feature-matrix [col-names data]
      (-> (i/$ col-names data)

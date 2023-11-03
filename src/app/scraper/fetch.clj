@@ -12,6 +12,11 @@
 (util/defn-memo fetch-url [url]
   (html/html-resource (java.net.URL. url)))
 
+(defn url-still-valid?
+  [path]
+  (try (do (fetch-url (str "https://suumo.jp" path)) true) ;; TODO: target shouldnt be hard-coded
+       (catch Exception e false)))
+
 (defn fetch
   [page]
   (let [u (str url "&page=" page)]
