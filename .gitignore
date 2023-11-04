@@ -12,3 +12,4 @@ out/
 .clj-kondo
 .nrepl-port
 data
+.env

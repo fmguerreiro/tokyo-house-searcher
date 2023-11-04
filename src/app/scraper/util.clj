@@ -16,3 +16,14 @@
     (lazy-seq
       (cons (first s)
             (unchunk (next s))))))
+
+(defn env-dynamic
+  [k]
+  (if-let [v (-> k name System/getenv)]
+    v
+    (throw (ex-info (str "Missing env variable: " k)
+                    {:missing-env-variable k}))))
+
+(defmacro env
+  [k]
+  (env-dynamic k))
