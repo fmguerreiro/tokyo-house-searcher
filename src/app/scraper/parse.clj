@@ -1,7 +1,6 @@
 (ns app.scraper.parse
   (:require
    [app.scraper.fetch :as fetch]
-   [app.scraper.util :as util]
    [net.cgrand.enlive-html :as html]
    [clojure.string :as str]
    [diehard.core :as dh]))
@@ -56,7 +55,7 @@
   []
   (let [first-page (fetch/fetch 1)
         page-count (Integer/parseInt (first (html/select first-page [:.pagination-parts html/last-child > html/text-node])))]
-    (->> (map #(dh/with-rate-limiter fetch-rl (fetch/fetch %)) (range 1 page-count)) ; TODO: last processed page was 288
+    (->> (map #(dh/with-rate-limiter fetch-rl (fetch/fetch %)) (range 1 page-count))
          (mapcat #(html/select % [:.cassetteitem])) ;; listings list
          (map #(html->map %)))))
 

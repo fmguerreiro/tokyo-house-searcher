@@ -24,7 +24,7 @@
                           size  (str (get-in % [:data :houses/size]))
                           link  (str (get-in % [:data :houses/link]))]
                       (str "House " name "\n" "Price: " price " Size: " size " Link: " (str "https://suumo.jp" link)))
-                   results)]
+                   (take 10 results))]
     (str "Found " n " outliers:\n\n" (str/join "\n" data))))
 
 #_(
