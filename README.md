@@ -34,3 +34,9 @@ Alternatively, CIDER users can run `cider-jack-in-cljs`. With this running, you 
 clj -T:build uber
 java -jar target/parser/core-0.0.1-standalone.jar
 ```
+
+### Running the scraping job
+
+``` shell
+clojure -M -m app.scraper
+```

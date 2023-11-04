@@ -1,6 +1,7 @@
 (ns app.scraper
+  (:gen-class)
   (:require [app.scraper.parse :as parse]
-            [app.predictor.main :as predictor]
+            [app.predictor :as predictor]
             [app.email :as email]
             [app.db :as db]))
 

@@ -1,4 +1,4 @@
-(ns app.predictor.main
+(ns app.predictor
   (:require [app.predictor.transformer :as t]
             [app.db :as db]
             [app.scraper.fetch :as f]
