@@ -19,9 +19,10 @@
     (email/send-email "Recommended rentals" (email/create-msg-body results))
     (println "Email sent!")))
 
-(-main)
 #_(
    (def res (parse/scrape-suumo))
    (count (distinct (map #(% :id) res)))
    (map #(db/insert %) res)
+
+   (-main)
    )
