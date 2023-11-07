@@ -8,16 +8,18 @@
 (defn -main
   [& args]
   (println "Scraping suumo!")
-  (map #(db/insert %) (parse/scrape-suumo))
+  (->> (parse/scrape-suumo)
+       (map #(db/insert %))
+       (dorun))
   (println "Scraping done!")
-  (let [results (predictor/find-outliers)]
+  (let [results (predictor/find-outliers)] ;; NOTE: find-outliers gets data from db
     (println "Predicting done!")
-    (println "Outliers:")
-    (println results)
+    (println (str (count results) " outliers"))
     (println "Sending email...")
     (email/send-email "Recommended rentals" (email/create-msg-body results))
     (println "Email sent!")))
 
+(-main)
 #_(
    (def res (parse/scrape-suumo))
    (count (distinct (map #(% :id) res)))

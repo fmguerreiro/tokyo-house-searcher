@@ -14,7 +14,9 @@
 
 (defn url-still-valid?
   [path]
-  (try (do (fetch-url (str "https://suumo.jp" path)) true) ;; TODO: target shouldnt be hard-coded
+  (try (do
+         (fetch-url (str "https://suumo.jp" path)) ;; TODO: target shouldnt be hard-coded
+         true)
        (catch Exception e false)))
 
 (defn fetch

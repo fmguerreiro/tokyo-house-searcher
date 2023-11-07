@@ -49,13 +49,20 @@
 ;;     (Thread/sleep interval)
 ;;     (f x)))
 
-(dh/defratelimiter fetch-rl {:rate 100})
+(dh/defratelimiter
+  fetch-rl
+  {:rate 1} ;; 1 per sec
+)
 
 (defn scrape-suumo
   []
   (let [first-page (fetch/fetch 1)
         page-count (Integer/parseInt (first (html/select first-page [:.pagination-parts html/last-child > html/text-node])))]
-    (->> (map #(dh/with-rate-limiter fetch-rl (fetch/fetch %)) (range 1 page-count))
+    (->> (range 1 page-count)
+         ;; (map #(dh/with-rate-limiter fetch-rl (fetch/fetch %)))
+         (map #(do (Thread/sleep 500)
+                   (fetch/fetch %)))
+         ;; (doall)
          (mapcat #(html/select % [:.cassetteitem])) ;; listings list
          (map #(html->map %)))))
 
