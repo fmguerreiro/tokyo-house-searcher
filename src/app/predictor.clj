@@ -6,7 +6,7 @@
             [clojure.core.matrix :as m]
             [incanter.stats :as s]))
 
-(defn outlier-prevalence
+(defn- outlier-prevalence
   "Calculates the best outliers from a dataset by returning a vector of
   outliers with their indices and differences from the original values sorted by biggest difference first.
 
@@ -20,14 +20,21 @@
        (sort-by :diff)
        (reverse)))
 
+(defn- filter-outliers
+  [outliers]
+  (->> outliers
+       (filter #(= "渋谷" (:houses/location (:data %))))
+       (filter #(f/url-still-valid? (:houses/link (:data %))))))
+
 (defn find-outliers
+  "Retrieves all records from the database, converts them into a matrix, calculates outlier prevalence and filters out outliers.
+  It returns a collection of outlier records."
   []
   (let [data (into [] (db/select-all))
         dataset-matrix (t/data->matrix data)]
     (->> (outlier-prevalence trained-lm dataset-matrix)
          (map #(assoc % :data (nth data (:i %))))
-         (filter #(= "渋谷" (:houses/location (:data %))))
-         (filter #(f/url-still-valid? (:houses/link (:data %)))))))
+         (filter-outliers))))
 
 ;; view graph in relation to the first independent variable
 ;; (i/view (c/add-lines (c/scatter-plot (first X) y) (first X) (:fitted price-lm)))
