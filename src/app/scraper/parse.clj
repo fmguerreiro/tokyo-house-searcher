@@ -57,7 +57,7 @@
 (defn scrape-suumo
   []
   (let [first-page (fetch/fetch 1)
-        page-count (Integer/parseInt (first (html/select first-page [:.pagination-parts html/last-child > html/text-node])))]
+        page-count (max 200 (Integer/parseInt (first (html/select first-page [:.pagination-parts html/last-child > html/text-node]))))]
     (->> (range 1 page-count)
          (map #(dh/with-rate-limiter fetch-rl (fetch/fetch %)))
          ;; (map #(do (Thread/sleep 500)

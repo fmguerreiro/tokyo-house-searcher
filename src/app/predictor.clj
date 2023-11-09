@@ -6,6 +6,9 @@
             [clojure.core.matrix :as m]
             [incanter.stats :as s]))
 
+(defn- percentage-difference [old-value new-value]
+  (* (/ (Math/abs (- new-value old-value)) old-value) 100))
+
 (defn- outlier-prevalence
   "Calculates the best outliers from a dataset by returning a vector of
   outliers with their indices and differences from the original values sorted by biggest difference first.
@@ -14,7 +17,7 @@
   [model ds-m]
   (->> (m/slice-map #(let [{X :X y :y} (t/row->x-y %)
                            predicted   (s/predict model X)]
-                       {:diff (Math/abs (- y predicted))})
+                       {:diff (percentage-difference y predicted)})
                     ds-m)
        (map-indexed #(assoc %2 :i %1))
        (sort-by :diff)
