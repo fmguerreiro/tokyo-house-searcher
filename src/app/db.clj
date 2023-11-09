@@ -39,6 +39,13 @@
                   (sql/format {:pretty true}))]
     (jdbc/execute! db query)))
 
+(defn delete
+  [house]
+  (let [query (-> (h/delete-from :houses)
+                  (h/where [:= :id (:houses/id house)])
+                  (sql/format {:pretty true}))]
+    (jdbc/execute! db query)))
+
 (defn select
   ([] (select 0))
   ([page]

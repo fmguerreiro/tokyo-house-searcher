@@ -20,12 +20,19 @@
        (sort-by :diff)
        (reverse)))
 
+(defn- remove-stale-urls
+  [outliers]
+  (->> outliers
+       (filter #(not (f/url-still-valid? (get-in % [:data :houses/link]))))
+       (run! #(db/delete (:data %))))
+  (->> outliers
+       (filter #(f/url-still-valid? (get-in % [:data :houses/link])))))
+
 (defn- filter-outliers
   [outliers]
   (->> outliers
-       (filter #(= "渋谷" (:houses/location (:data %))))
-       (filter #(< 20 (:houses/price (:data %))))
-       (filter #(f/url-still-valid? (:houses/link (:data %))))))
+       (filter #(= "渋谷" (get-in % [:data :houses/location])))
+       (filter #(< 20 (get-in % [:data :houses/price])))))
 
 (defn find-outliers
   "Retrieves all records from the database, converts them into a matrix, calculates outlier prevalence and filters out outliers.
@@ -35,6 +42,7 @@
         dataset-matrix (t/data->matrix data)]
     (->> (outlier-prevalence trained-lm dataset-matrix)
          (map #(assoc % :data (nth data (:i %))))
+         (remove-stale-urls)
          (filter-outliers))))
 
 ;; view graph in relation to the first independent variable

@@ -12,7 +12,7 @@
        (map #(db/insert %))
        (dorun))
   (println "Scraping done!")
-  (let [results (predictor/find-outliers)] ;; NOTE: find-outliers gets data from db
+  (let [results (doall (predictor/find-outliers))] ;; NOTE: find-outliers gets data from db
     (println "Predicting done!")
     (println (str (count results) " outliers"))
     (println "Sending email...")
