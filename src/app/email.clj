@@ -23,7 +23,9 @@
                           price (str (get-in % [:data :houses/price]))
                           size  (str (get-in % [:data :houses/size]))
                           link  (str (get-in % [:data :houses/link]))]
-                      (str "House " name "\n" "Price: " price " Size: " size " Link: " (str "https://suumo.jp" link)))
+                      (str
+                       "House " name "\n"
+                       "Price: " price "万円 Size: " size "\nLink: " (str "https://suumo.jp" link)))
                    (take 10 results))]
     (str "Found " n " outliers:\n\n" (str/join "\n" data))))
 
