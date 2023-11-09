@@ -4,7 +4,7 @@
             [app.scraper.util :as util]
             [net.cgrand.enlive-html :as html]))
 
-(def ^:dynamic *base-url* "https://suumo.jp/jj/chintai/ichiran/FR301FC001/?ar=030&bs=040&ta=13&tc=0401303&tc=0401304&sngz=&po1=09&fw=")
+(def ^:dynamic *base-url* "https://suumo.jp/jj/chintai/ichiran/FR301FC001/?ar=030&bs=040&ta=13&tc=0401303&tc=0401304&sngz=&po1=09pc=50&fw=")
 (def ^:dynamic *filter* ["告知事項"])
 
 (def url (str *base-url* (str/join "+" (map #(codec/percent-encode %) *filter*))))
