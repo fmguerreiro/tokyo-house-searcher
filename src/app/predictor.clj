@@ -24,6 +24,7 @@
   [outliers]
   (->> outliers
        (filter #(= "渋谷" (:houses/location (:data %))))
+       (filter #(< 20 (:houses/price (:data %))))
        (filter #(f/url-still-valid? (:houses/link (:data %))))))
 
 (defn find-outliers
